@@ -15,12 +15,18 @@ class Packagist:
         self.__fetch_releases()
         return self.package_data
 
-    def get_new_version(self, last_version):
+    def get_new_version(self, version):
+        self.package_data = None
         self.__fetch_releases()
+        if self.package_data[-1]['version'] != version:
+            return self.package_data[-1]
+        return None
 
     def __fetch_releases(self):
         if self.package_data is None:
             package_data = requests.get(URL.format(self.package)).json()
-            package_data = {k:v for k, v in package_data['packages'][self.package].items() if -1 == k.find('-')}
+            package_data = {k:v for k, v in package_data['packages'][self.package].items()
+                            if -1 == v['version_normalized'].find('-')
+                            }
             self.package_data = sorted(package_data.values(), key=lambda r: r['time'])
         return self
