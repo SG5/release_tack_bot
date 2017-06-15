@@ -23,7 +23,7 @@ for item in db.tasks.find():
         if last_release is not None:
             for consumer in db.consumers.find({'task': item['_id']}):
                 bot.send_message(chat_id=consumer['chat_id'], text='Вышла новая версия {}:  {}'.format(
-                    item.get(['description'], last_release['description']),
+                    item.get('description', last_release['description']),
                     last_release['version']
                 ))
 
