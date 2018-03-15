@@ -1,4 +1,4 @@
-import requests
+import aiohttp
 
 URL = 'https://packagist.org/p/{}.json'
 
@@ -6,25 +6,30 @@ URL = 'https://packagist.org/p/{}.json'
 class Packagist:
     package = None
     package_data = None
+    session = None
 
     def __init__(self, package):
         super().__init__()
         self.package = package
 
-    def get_releases(self):
-        self.__fetch_releases()
+    async def get_releases(self):
+        await self.__fetch_releases()
         return self.package_data
 
-    def get_new_version(self, version):
+    async def get_new_version(self, since):
         self.package_data = None
-        self.__fetch_releases()
-        if self.package_data[-1]['version'] != version:
+        await self.__fetch_releases()
+        if self.package_data[-1]['version'] != since:
             return self.package_data[-1]
         return None
 
-    def __fetch_releases(self):
+    async def __fetch_releases(self):
+        if not Packagist.session:
+            Packagist.session = aiohttp.ClientSession()
+
         if self.package_data is None:
-            package_data = requests.get(URL.format(self.package)).json()
+            response = await Packagist.session.get(URL.format(self.package))
+            package_data = await response.json()
             package_data = {k:v for k, v in package_data['packages'][self.package].items()
                             if -1 == v['version_normalized'].find('-')
                             }
