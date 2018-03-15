@@ -9,10 +9,10 @@ def index():
     return 'Hello World'
 
 
-@app.route("/tasks")
+@app.route('/tasks')
 def tasks():
     return mongo_tasks()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run()
