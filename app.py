@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request
+from flask import Flask
 from tasks import mongo_tasks
 
 app = Flask(__name__)
@@ -13,11 +13,7 @@ def index():
 
 @app.route('/tasks')
 def tasks():
-    result = mongo_tasks()
-    shutdown = request.environ.get('werkzeug.server.shutdown')
-    if shutdown:
-        shutdown()
-    return result
+    return mongo_tasks()
 
 
 if __name__ == '__main__':
