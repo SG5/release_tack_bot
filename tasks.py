@@ -2,10 +2,15 @@ import asyncio
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 from init import db, bot
+from provider.npmjs import NpmJS
 from provider.packagist import Packagist
 
 loop = asyncio.get_event_loop()
 
+PROVIDERS = {
+    'Packagist': Packagist,
+    'NpmJS': NpmJS,
+}
 
 def mongo_tasks():
     wait_tasks = asyncio.wait([get_tasks()])
@@ -21,12 +26,13 @@ async def get_tasks():
 
 
 async def process_task(task):
-    api = Packagist(task['product'])
+    api = PROVIDERS[task['provider']](task['product'])
     last_release = None
 
     if 'version' in task:
         last_release = await api.get_new_version(task['version'])
         if last_release:
+            last_release['provider'] = task['provider']
             await notify_consumers(task, last_release)
     else:
         releases = await api.get_releases()
@@ -46,11 +52,20 @@ async def notify_consumers(item, release):
             item.get('description', release['description']),
             release['version']
         )
-        reply_links = [[
-            InlineKeyboardButton('Packagist', url='https://packagist.org/packages/{}'.format(item['product']))
-        ]]
+        reply_links = [[]]
+        release_url = ''
 
-        release_url = release['source']['url']
+        if release['provider'] == 'Packagist':
+            reply_links[0].append(
+                InlineKeyboardButton('Packagist', url='https://packagist.org/packages/{}'.format(item['product']))
+            )
+            release_url = release.get('source', {}).get('url', '')
+        elif release['provider'] == 'NpmJS':
+            reply_links[0].append(
+                InlineKeyboardButton('npmjs.com', url='https://www.npmjs.com/package/{}'.format(item['product']))
+            )
+            release_url = release.get('repository', {}).get('url', '').replace('git+http', 'http')
+
         if release_url[-4:] == '.git' and release_url[:19] == 'https://github.com/':
             reply_links[0].append(InlineKeyboardButton(
                 'Github', url=release_url[:-4]
