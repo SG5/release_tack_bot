@@ -5,24 +5,17 @@ from init import db, bot
 from provider.npmjs import NpmJS
 from provider.packagist import Packagist
 
-loop = asyncio.get_event_loop()
-
 PROVIDERS = {
     'Packagist': Packagist,
     'NpmJS': NpmJS,
 }
 
-def mongo_tasks():
-    wait_tasks = asyncio.wait([get_tasks()])
-    loop.run_until_complete(wait_tasks)
-    return 'ok'
 
-
-async def get_tasks():
+async def mongo_tasks():
     processing = []
     for task in await db.tasks.find().to_list(1000):
         processing.append(process_task(task))
-    await asyncio.wait(processing)
+    return await asyncio.wait(processing)
 
 
 async def process_task(task):

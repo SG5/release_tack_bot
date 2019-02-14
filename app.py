@@ -1,19 +1,19 @@
 import os
+from sanic import response
 
-from flask import Flask
 from tasks import mongo_tasks
-
-app = Flask(__name__)
+from init import app
 
 
 @app.route("/")
-def index():
-    return 'Hello World'
+async def index(request):
+    return response.text('Hello World')
 
 
 @app.route('/tasks')
-def tasks():
-    return mongo_tasks()
+async def tasks(request):
+    await mongo_tasks()
+    return response.text('ok')
 
 
 if __name__ == '__main__':
