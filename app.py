@@ -1,7 +1,7 @@
 import os
 from sanic import response
 
-from tasks import mongo_tasks
+from tasks.new_software import mongo_tasks
 from init import app
 
 

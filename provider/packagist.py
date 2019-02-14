@@ -31,7 +31,7 @@ class Packagist:
             response = await Packagist.session.get(URL.format(self.package))
             package_data = await response.json()
             package_data = {k:v for k, v in package_data['packages'][self.package].items()
-                            if -1 == v['version_normalized'].find('-')
+                            if -1 == v['version_normalized'].find('-') and 'time' in v
                             }
             self.package_data = sorted(package_data.values(), key=lambda r: r['time'])
         return self
