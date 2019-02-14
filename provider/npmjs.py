@@ -1,4 +1,4 @@
-import aiohttp
+from aiohttp import ClientSession
 from distutils.version import StrictVersion
 
 URL = 'https://registry.npmjs.org/{}'
@@ -12,7 +12,7 @@ class NpmJS:
         super().__init__()
         self.package = package
         if not self.session:
-            self.session = aiohttp.ClientSession()
+            self.session = ClientSession()
 
     async def get_releases(self):
         await self.__fetch_releases()

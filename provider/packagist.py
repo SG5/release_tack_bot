@@ -1,4 +1,4 @@
-import aiohttp
+from aiohttp import ClientSession
 
 URL = 'https://packagist.org/p/{}.json'
 
@@ -25,7 +25,7 @@ class Packagist:
 
     async def __fetch_releases(self):
         if not Packagist.session:
-            Packagist.session = aiohttp.ClientSession()
+            Packagist.session = ClientSession()
 
         if self.package_data is None:
             response = await Packagist.session.get(URL.format(self.package))

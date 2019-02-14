@@ -1,5 +1,5 @@
 import asyncio
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 
 from init import db, bot
 from provider.npmjs import NpmJS
@@ -57,23 +57,23 @@ async def notify_consumers(item, release):
 
         if release['provider'] == 'Packagist':
             reply_links[0].append(
-                InlineKeyboardButton('Packagist', url='https://packagist.org/packages/{}'.format(item['product']))
+                InlineKeyboardButton(text='Packagist', url=f'https://packagist.org/packages/{item["product"]}')
             )
             release_url = release.get('source', {}).get('url', '')
         elif release['provider'] == 'NpmJS':
             reply_links[0].append(
-                InlineKeyboardButton('npmjs.com', url='https://www.npmjs.com/package/{}'.format(item['product']))
+                InlineKeyboardButton(text='npmjs.com', url=f'https://www.npmjs.com/package/{item["product"]}')
             )
             release_url = release.get('repository', {}).get('url', '').replace('git+http', 'http')
 
         if release_url[-4:] == '.git' and release_url[:19] == 'https://github.com/':
-            reply_links[0].append(InlineKeyboardButton(
-                'Github', url=release_url[:-4]
-            ))
+            reply_links[0].append(
+                InlineKeyboardButton(text='Github', url=release_url[:-4])
+            )
 
-        bot.send_message(
+        bot.sendMessage(
             chat_id=consumer['chat_id'], text=text, parse_mode='Markdown',
-            reply_markup=InlineKeyboardMarkup(reply_links)
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=reply_links)
         )
 
 
