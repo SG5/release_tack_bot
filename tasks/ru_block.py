@@ -11,7 +11,7 @@ WHITE_LIST = {
 
 
 async def generate_ipset():
-    result = 'create rublack_tmp hash:ip family inet hashsize 65536 maxelem 900000\n'
+    result = 'create rublack_tmp hash:ip family inet hashsize 16384 maxelem 65536\n'
     result += 'add rublack_tmp 138.201.14.212\n'
 
     for ip in await fetch_ips():
