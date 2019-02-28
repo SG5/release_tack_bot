@@ -3,6 +3,7 @@ from sanic import response
 
 from tasks.new_software import mongo_tasks
 from tasks.ru_block import generate_ipset
+from tasks.visa_bulletin import VisaBulletin
 from init import app
 
 
@@ -14,6 +15,12 @@ async def index(_):
 @app.route('/tasks')
 async def tasks(_):
     await mongo_tasks()
+    return response.text('ok')
+
+
+@app.route('/vb')
+async def tasks(_):
+    await VisaBulletin().run()
     return response.text('ok')
 
 

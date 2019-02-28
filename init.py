@@ -16,3 +16,4 @@ releaseDb = dbClient[
 ]
 
 releaseBot = Bot(token=os.environ['TELEGRAM_RELEASE_BOT_TOKEN'])
+mobMapBot = Bot(token=os.environ['TELEGRAM_MOBMAP_BOT_TOKEN'])
