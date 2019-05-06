@@ -51,7 +51,7 @@ class VisaBulletin:
             async with self.session.get(vb_url) as response:
                 response_data = await response.text()
 
-            search_result = re.search('EUROPE.+?EUROPE.+?([\\d,]+)', response_data, re.DOTALL)
+            search_result = re.search('EUROPE.+?EUROPE.+?([\\d,]+|CURRENT)', response_data, re.S|re.I)
             if search_result:
                 return search_result.group(1), vb_url
         except ClientError:
@@ -69,7 +69,7 @@ class VisaBulletin:
             text = pdf_file.getPage(pages).extractText().replace('\n', '')
 
             if 'THE DIVERSITY (DV) IMMIGRANT CATEGORY RANK CUT-OFFS WHICH WILL APPLY' in text:
-                search_result = re.search('EUROPE.+?([\\d,]+)', text, re.DOTALL)
+                search_result = re.search('EUROPE.+?([\\d,]+|CURRENT)', text, re.S|re.I)
                 if search_result:
                     return search_result.group(1), pdf_url
 
