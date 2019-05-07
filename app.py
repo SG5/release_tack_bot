@@ -26,7 +26,7 @@ async def tasks(_):
 
 @app.route('/ru-block')
 async def tasks(_):
-    return response.text(await generate_ipset())
+    return response.stream(generate_ipset)
 
 
 if __name__ == '__main__':

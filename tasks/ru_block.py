@@ -3,15 +3,13 @@ from aiohttp import ClientSession
 URL = 'https://reestr.rublacklist.net/api/v2/ips/csv'
 
 
-async def generate_ipset():
-    result = 'create rublack_tmp hash:ip family inet hashsize 65536 maxelem 900000\n'
-    result += 'add rublack_tmp 138.201.14.212\n'
+async def generate_ipset(response):
+    await response.write('create rublack_tmp hash:ip family inet hashsize 65536 maxelem 900000\n')
+    await response.write('add rublack_tmp 138.201.14.212\n')
 
     async for ip in fetch_ips():
         if ip:
-            result += f'add rublack_tmp {ip}\n'
-
-    return result
+            await response.write(f'add rublack_tmp {ip}\n')
 
 
 async def fetch_ips():
