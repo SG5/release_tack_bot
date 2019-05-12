@@ -4,12 +4,11 @@ URL = 'https://reestr.rublacklist.net/api/v2/ips/csv'
 
 
 async def generate_ipset(response):
-    await response.write('create rublack_tmp hash:ip family inet hashsize 65536 maxelem 900000\n')
-    await response.write('add rublack_tmp 138.201.14.212\n')
+    await response.write('add rublack 138.201.14.212\n')
 
     async for ip in fetch_ips():
         if ip:
-            await response.write(f'add rublack_tmp {ip}\n')
+            await response.write(f'add rublack {ip}\n')
 
 
 async def fetch_ips():
