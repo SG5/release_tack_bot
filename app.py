@@ -12,6 +12,11 @@ async def index(_):
     return response.text('Hello World')
 
 
+@app.route("/favicon.ico")
+async def index(_):
+    return response.text('', 404)
+
+
 @app.route('/tasks')
 async def tasks(_):
     await mongo_tasks()
