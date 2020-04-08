@@ -36,6 +36,7 @@ class VisaBulletin:
             return
 
         notify_new_vb(next_bulletin)
+        releaseDb.bulletins.insert_one({'name': next_bulletin})
 
         pdf_name = next_bulletin.replace(' ', '').lower()
         new_cn, cn_url = await self._check_case_number(
@@ -44,7 +45,6 @@ class VisaBulletin:
         )
         if new_cn:
             notify_case_number(new_cn, cn_url)
-            releaseDb.bulletins.insert_one({'name': next_bulletin})
 
     async def _check_case_number(self, vb_url, pdf_url):
         try:
