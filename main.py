@@ -7,32 +7,32 @@ from tasks.visa_bulletin import VisaBulletin
 from init import app
 
 
-@app.route("/")
+@app.get("/")
 async def index(_):
     return response.text('Hello World')
 
 
-@app.route("/favicon.ico")
+@app.get("/favicon.ico")
 async def index(_):
     return response.text('', 404)
 
 
-@app.route('/tasks')
+@app.get('/tasks')
 async def tasks(_):
     await mongo_tasks()
     return response.text('ok')
 
 
-@app.route('/vb')
+@app.get('/vb')
 async def tasks(_):
     await VisaBulletin().run()
     return response.text('ok')
 
 
-@app.route('/ru-block')
+@app.get('/ru-block')
 async def tasks(_):
     return response.stream(generate_ipset)
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 3000)))

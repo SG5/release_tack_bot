@@ -1,4 +1,6 @@
 import asyncio
+import logging
+
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 
 from init import releaseDb, releaseBot
@@ -10,15 +12,21 @@ PROVIDERS = {
     'NpmJS': NpmJS,
 }
 
+logger = logging.getLogger(__name__)
 
-async def mongo_tasks():
+
+async def mongo_tasks() -> None:
     processing = []
     for task in await releaseDb.tasks.find().to_list(1000):
         processing.append(process_task(task))
-    return await asyncio.wait(processing)
+    try:
+        await asyncio.wait(processing)
+    except Exception as ex:
+        logger.exception(f"{mongo_tasks.__name__} got an exception during processing {len(processing)} tasks", exc_info=ex)
 
 
-async def process_task(task):
+async def process_task(task) -> None:
+    logger.info(f"Processing task {task['_id']}")
     api = PROVIDERS[task['provider']](task['product'])
     last_release = None
 
@@ -39,8 +47,10 @@ async def process_task(task):
         )
 
 
-async def notify_consumers(item, release):
+async def notify_consumers(item, release) -> int:
+    count = 0
     for consumer in await releaseDb.consumers.find(filter={'task': item['_id']}, projection={'chat_id': True}).to_list(1000):
+        count += 1
         text = 'Вышла новая версия *{}*:  `{}`'.format(
             item.get('description', release['description']),
             release['version']
@@ -68,6 +78,9 @@ async def notify_consumers(item, release):
             chat_id=consumer['chat_id'], text=text, parse_mode='Markdown',
             reply_markup=InlineKeyboardMarkup(inline_keyboard=reply_links)
         )
+
+    logger.info(f"{notify_consumers.__name__} sent {count} message(s) for task {item['_id']}")
+    return count
 
 
 if __name__ == '__main__':

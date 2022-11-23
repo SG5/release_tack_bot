@@ -1,7 +1,11 @@
+import ssl
+
+import certifi as certifi
 from aiohttp import ClientSession
 
 URL = 'https://packagist.org/p/{}.json'
 
+sslcontext = ssl.create_default_context(cafile=certifi.where())
 
 class Packagist:
     package = None
@@ -28,7 +32,7 @@ class Packagist:
             Packagist.session = ClientSession()
 
         if self.package_data is None:
-            response = await Packagist.session.get(URL.format(self.package))
+            response = await Packagist.session.get(URL.format(self.package), ssl=sslcontext)
             package_data = await response.json()
             package_data = {k:v for k, v in package_data['packages'][self.package].items()
                             if -1 == v['version_normalized'].find('-') and 'time' in v

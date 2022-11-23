@@ -1,14 +1,17 @@
+import logging
 import os
+
 from sanic import Sanic
 from motor.motor_asyncio import AsyncIOMotorClient
 from telepot import Bot
 
-app = Sanic()
+app = Sanic("bot")
 dbClient = AsyncIOMotorClient(os.environ['MONGODB_CONNECT'])
 
+logging.basicConfig(level=logging.INFO)
 
-@app.listener('before_server_start')
-async def open_connection(app, loop):
+@app.before_server_start
+async def open_connection(_, loop):
     dbClient.io_loop = loop
 
 releaseDb = dbClient[
