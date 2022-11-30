@@ -11,8 +11,8 @@ class NpmJS:
     def __init__(self, package):
         super().__init__()
         self.package = package
-        if not self.session:
-            self.session = ClientSession()
+        if not NpmJS.session:
+            NpmJS.session = ClientSession()
 
     async def get_releases(self):
         await self.__fetch_releases()

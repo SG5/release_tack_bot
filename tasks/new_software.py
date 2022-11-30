@@ -24,9 +24,14 @@ async def mongo_tasks() -> None:
     except Exception as ex:
         logger.exception(f"{mongo_tasks.__name__} got an exception during processing {len(processing)} tasks", exc_info=ex)
 
+    for p in PROVIDERS.values():
+        if p.session:
+            await p.session.close()
+            p.session = None
+
 
 async def process_task(task) -> None:
-    logger.info(f"Processing task {task['_id']}")
+    logger.info(f"{process_task.__name__} for task {task['_id']}")
     api = PROVIDERS[task['provider']](task['product'])
     last_release = None
 

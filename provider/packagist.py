@@ -15,6 +15,8 @@ class Packagist:
     def __init__(self, package):
         super().__init__()
         self.package = package
+        if not Packagist.session:
+            Packagist.session = ClientSession()
 
     async def get_releases(self):
         await self.__fetch_releases()
@@ -28,9 +30,6 @@ class Packagist:
         return None
 
     async def __fetch_releases(self):
-        if not Packagist.session:
-            Packagist.session = ClientSession()
-
         if self.package_data is None:
             response = await Packagist.session.get(URL.format(self.package), ssl=sslcontext)
             package_data = await response.json()
