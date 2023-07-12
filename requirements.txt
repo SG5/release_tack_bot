@@ -1,9 +1,11 @@
 aiodns~=3.0.0
-aiohttp~=3.8.3
-urllib3~=1.26.12
+aiohttp~=3.8.4
+urllib3==1.26.16
 sanic~=22.3.2
 motor~=2.5.1
 telepot~=12.7
-pymongo~=3.12.3
+pymongo==3.13.0
+python-telegram-bot==20.3
 PyPDF2~=1.28.6
-certifi~=2022.9.24
+certifi==2023.5.7
+websockets==10.4

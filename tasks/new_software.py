@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
-from init import releaseDb, releaseBot
+from init import release_db, release_bot
 from provider.npmjs import NpmJS
 from provider.packagist import Packagist
 
@@ -17,18 +17,26 @@ logger = logging.getLogger(__name__)
 
 async def mongo_tasks() -> None:
     processing = []
-    for task in await releaseDb.tasks.find().to_list(1000):
+    for task in await release_db.tasks.find().to_list(1000):
         processing.append(process_task(task))
-    try:
-        await asyncio.wait(processing)
-    except Exception as ex:
-        logger.exception(f"{mongo_tasks.__name__} got an exception during processing {len(processing)} tasks", exc_info=ex)
+        await limiter(processing, 3)
+    await limiter(processing)
 
     for p in PROVIDERS.values():
         if p.session:
             await p.session.close()
             p.session = None
 
+async def limiter(processing: list, limit = 0) -> None:
+    if not processing:
+        return
+    if len(processing) < limit:
+        return
+    try:
+        await asyncio.wait(processing)
+    except Exception as ex:
+        logger.exception(f"{limiter.__name__} got an exception during awaiting {len(processing)} tasks", exc_info=ex)
+    processing.clear()
 
 async def process_task(task) -> None:
     logger.info(f"{process_task.__name__} for task {task['_id']}")
@@ -46,7 +54,7 @@ async def process_task(task) -> None:
             last_release = releases[-1]
 
     if last_release and task.get('version') != last_release['version']:
-        releaseDb.tasks.update_one(
+        release_db.tasks.update_one(
             {'_id': task['_id']},
             {'$set': {'version': last_release['version']}}
         )
@@ -54,7 +62,8 @@ async def process_task(task) -> None:
 
 async def notify_consumers(item, release) -> int:
     count = 0
-    for consumer in await releaseDb.consumers.find(filter={'task': item['_id']}, projection={'chat_id': True}).to_list(1000):
+    logger.info(f"{notify_consumers.__name__} sending messages for task {item['_id']}")
+    for consumer in await release_db.consumers.find(filter={'task': item['_id']}, projection={'chat_id': True}).to_list(1000):
         count += 1
         text = 'Вышла новая версия *{}*:  `{}`'.format(
             item.get('description', release['description']),
@@ -79,7 +88,7 @@ async def notify_consumers(item, release) -> int:
                 InlineKeyboardButton(text='Github', url=release_url[:-4])
             )
 
-        releaseBot.sendMessage(
+        await release_bot.send_message(
             chat_id=consumer['chat_id'], text=text, parse_mode='Markdown',
             reply_markup=InlineKeyboardMarkup(inline_keyboard=reply_links)
         )
@@ -89,4 +98,5 @@ async def notify_consumers(item, release) -> int:
 
 
 if __name__ == '__main__':
-    mongo_tasks()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(mongo_tasks())

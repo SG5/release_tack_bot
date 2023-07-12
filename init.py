@@ -4,19 +4,20 @@ import os
 from sanic import Sanic
 from motor.motor_asyncio import AsyncIOMotorClient
 from telepot import Bot
+from telegram import Bot as tgBot
 
 app = Sanic("bot")
-dbClient = AsyncIOMotorClient(os.environ['MONGODB_CONNECT'])
+db_client = AsyncIOMotorClient(os.environ['MONGODB_CONNECT'])
 
 logging.basicConfig(level=logging.INFO)
 
 @app.before_server_start
 async def open_connection(_, loop):
-    dbClient.io_loop = loop
+    db_client.io_loop = loop
 
-releaseDb = dbClient[
+release_db = db_client[
     os.environ.get('MONGODB_DATABASE', 'releases')
 ]
 
-releaseBot = Bot(token=os.environ['TELEGRAM_RELEASE_BOT_TOKEN'])
+release_bot = tgBot(token=os.environ['TELEGRAM_RELEASE_BOT_TOKEN'])
 mobMapBot = Bot(token=os.environ['TELEGRAM_MOBMAP_BOT_TOKEN'])

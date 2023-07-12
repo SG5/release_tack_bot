@@ -6,7 +6,7 @@ from PyPDF2 import PdfFileReader
 from aiohttp import ClientSession, ClientError
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 
-from init import mobMapBot, releaseDb
+from init import mobMapBot, release_db
 
 url = 'https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin.html'
 chats = [
@@ -23,7 +23,7 @@ class VisaBulletin:
             now.replace(month=now.month+1) if now.month < 12 else now.replace(month=1, year=now.year+1)
         ).strftime('%B %Y')
 
-        if await releaseDb.bulletins.find_one({'name': next_bulletin}):
+        if await release_db.bulletins.find_one({'name': next_bulletin}):
             return
 
         self.session = ClientSession()
@@ -36,7 +36,7 @@ class VisaBulletin:
             return
 
         notify_new_vb(next_bulletin)
-        releaseDb.bulletins.insert_one({'name': next_bulletin})
+        release_db.bulletins.insert_one({'name': next_bulletin})
 
         pdf_name = next_bulletin.replace(' ', '').lower()
         new_cn, cn_url = await self._check_case_number(
