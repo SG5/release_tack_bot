@@ -4,6 +4,7 @@ import logging
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup, error as tg_error
 
 from init import release_db, release_bot
+from logger import trace
 from provider.npmjs import NpmJS
 from provider.packagist import Packagist
 
@@ -15,10 +16,13 @@ PROVIDERS = {
 logger = logging.getLogger(__name__)
 
 
-async def mongo_tasks() -> None:
+@trace
+async def mongo_tasks() -> int:
     processing = []
+    tasks = 0
     for task in await release_db.tasks.find().to_list(1000):
         processing.append(process_task(task))
+        tasks += 1
         await limiter(processing, 3)
     await limiter(processing)
 
@@ -26,6 +30,8 @@ async def mongo_tasks() -> None:
         if p.session:
             await p.session.close()
             p.session = None
+    return tasks
+
 
 async def limiter(processing: list, limit = 0) -> None:
     if not processing:
@@ -38,6 +44,7 @@ async def limiter(processing: list, limit = 0) -> None:
         logger.exception(f"{limiter.__name__} got an exception during awaiting {len(processing)} tasks", exc_info=ex)
     processing.clear()
 
+@trace
 async def process_task(task) -> None:
     logger.info(f"{process_task.__name__} for task {task['_id']}")
     api = PROVIDERS[task['provider']](task['product'])
@@ -60,6 +67,7 @@ async def process_task(task) -> None:
         )
 
 
+@trace
 async def notify_consumers(item, release) -> int:
     count = 0
     logger.info(f"{notify_consumers.__name__} sending messages for task {item['_id']}")
