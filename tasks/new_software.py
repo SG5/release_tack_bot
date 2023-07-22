@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, error as tg_error
 
 from init import release_db, release_bot
 from provider.npmjs import NpmJS
@@ -88,10 +88,14 @@ async def notify_consumers(item, release) -> int:
                 InlineKeyboardButton(text='Github', url=release_url[:-4])
             )
 
-        await release_bot.send_message(
-            chat_id=consumer['chat_id'], text=text, parse_mode='Markdown',
-            reply_markup=InlineKeyboardMarkup(inline_keyboard=reply_links)
-        )
+        try:
+            await release_bot.send_message(
+                chat_id=consumer['chat_id'], text=text, parse_mode='Markdown',
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=reply_links)
+            )
+        except tg_error.RetryAfter as err:
+            logger.warning(f"{notify_consumers.__name__} got a retry {err.message}")
+            await asyncio.sleep(err.retry_after)
 
     logger.info(f"{notify_consumers.__name__} sent {count} message(s) for task {item['_id']}")
     return count

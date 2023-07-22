@@ -19,7 +19,7 @@ async def index(_):
 
 @app.get('/tasks')
 async def tasks(_):
-    await mongo_tasks()
+    app.loop.create_task(mongo_tasks())
     return response.text('ok')
 
 
