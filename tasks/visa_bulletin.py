@@ -2,7 +2,7 @@ from datetime import datetime
 from io import BytesIO
 import re
 
-from PyPDF2 import PdfFileReader
+from pypdf import PdfReader
 from aiohttp import ClientSession, ClientError
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 
@@ -59,14 +59,14 @@ class VisaBulletin:
 
         try:
             async with self.session.get(pdf_url) as response:
-                pdf_file = PdfFileReader(BytesIO(await response.read()))
+                pdf_file = PdfReader(BytesIO(await response.read()))
         except ClientError:
             return
 
-        pages = pdf_file.numPages
+        pages = len(pdf_file.pages)
         while pages:
             pages -= 1
-            text = pdf_file.getPage(pages).extractText().replace('\n', '')
+            text = pdf_file.getPage(pages).extract_text().replace('\n', '')
 
             if 'THE DIVERSITY (DV) IMMIGRANT CATEGORY RANK CUT-OFFS WHICH WILL APPLY' in text:
                 search_result = re.search('EUROPE.+?([\\d,]+|CURRENT)', text, re.S|re.I)

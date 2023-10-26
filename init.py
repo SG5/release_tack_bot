@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.before_server_start
 async def open_connection(_, loop):
-    db_client.io_loop = loop
+    db_client._io_loop = loop
 
 release_db = db_client[
     os.environ.get('MONGODB_DATABASE', 'releases')
