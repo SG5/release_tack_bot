@@ -1,6 +1,6 @@
 aiodns~=3.1.1
 aiohttp~=3.8.6
-urllib3==1.26.18
+urllib3==1.26.19
 sanic~=22.3.2
 motor~=3.3.1
 telepot~=12.7
